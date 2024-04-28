@@ -1,7 +1,8 @@
 package com.kahoot.kahoot.Service;
 
-import com.kahoot.kahoot.Entity.User;
 import java.util.List;
+
+import com.kahoot.kahoot.Entity.User;
 
 public interface UserServicess {
     User createUser(User user);
@@ -9,4 +10,6 @@ public interface UserServicess {
     User getUserById(Long userId);
     User updateUser(Long userId, User user);
     void deleteUser(Long userId);
+    User getUserByUsernameAndPassword(String username, String password);
+    User getUserByUsername(String username);
 }

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class AnswerService implements Question {
+public class AnswerService implements AnswerServicess {
 
     private final Map<Long, String> answersMap = new HashMap<>();
 
