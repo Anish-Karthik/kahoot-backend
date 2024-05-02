@@ -1,12 +1,14 @@
 package com.kahoot.kahoot.Service;
 
-import com.kahoot.kahoot.Entity.Question;
-import com.kahoot.kahoot.Repository.QuestionRepository;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+
+import com.kahoot.kahoot.Entity.Question;
+import com.kahoot.kahoot.Repository.QuestionRepository;
+@Service
 public class QuestionSetService implements QuestionSetServicess {
 
     private Map<Long, Question> questionMap; // Store questions using their IDs

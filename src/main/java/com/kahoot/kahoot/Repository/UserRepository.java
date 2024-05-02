@@ -7,7 +7,7 @@ import com.kahoot.kahoot.Entity.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    User findByUsername(String username);
-    User findByUsernameAndUserPassword(String username, String password);
+    User findByUserName(String userName);
+    User findByUserNameAndUserPassword(String userName, String userPassword);
     
 }

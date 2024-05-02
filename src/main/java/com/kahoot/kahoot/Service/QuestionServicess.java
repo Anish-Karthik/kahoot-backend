@@ -1,7 +1,8 @@
 package com.kahoot.kahoot.Service;
 
-import com.kahoot.kahoot.Entity.Question;
 import java.util.List;
+
+import com.kahoot.kahoot.Entity.Question;
 
 public interface QuestionServicess {
   Question createQuestion(Question question);

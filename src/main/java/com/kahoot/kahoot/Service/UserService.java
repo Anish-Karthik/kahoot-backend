@@ -3,10 +3,11 @@ package com.kahoot.kahoot.Service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.kahoot.kahoot.Entity.User;
 import com.kahoot.kahoot.Repository.UserRepository;
-
+@Service
 public class UserService implements UserServicess{
   @Autowired
   private UserRepository userRepository;
@@ -28,7 +29,7 @@ public class UserService implements UserServicess{
 
   @Override
   public User getUserByUsername(String username) {
-    return userRepository.findByUsername(username);
+    return userRepository.findByUserName(username);
   }
 
   @Override
@@ -49,6 +50,6 @@ public class UserService implements UserServicess{
 
   @Override
   public User getUserByUsernameAndPassword(String username, String password) {
-    return userRepository.findByUsernameAndUserPassword(username, password);
+    return userRepository.findByUserNameAndUserPassword(username, password);
   }
 }
