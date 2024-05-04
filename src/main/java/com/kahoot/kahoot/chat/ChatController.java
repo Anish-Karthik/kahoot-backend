@@ -1,7 +1,6 @@
 package com.kahoot.kahoot.chat;
 
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -39,11 +38,33 @@ public class ChatController {
             @Payload ChatMessage chatMessage,
             SimpMessageHeaderAccessor headerAccessor
     ) {
-        activeUserManager.addUser(roomNumber,chatMessage.getSender());
+        LiveUser user = chatMessage.getSender();
+        if (activeUserManager.userExists(roomNumber, user)) {
+            // User already exists in the room\
+            return ChatMessage.builder()
+                    .type(MessageType.ERROR)
+                    .content("User already exists in the room")
+                    .sender(user)
+                    .build();
+        }
+        activeUserManager.addUser(roomNumber,user);
         // Add username in web socket session
         headerAccessor.getSessionAttributes().put("user", chatMessage.getSender());
+        headerAccessor.getSessionAttributes().put("roomNumber", roomNumber);
         return chatMessage;
     }
+
+    // updateUser imageUrl
+    @MessageMapping("/chat/{roomNumber}/updateUser")
+    @SendTo("/room/{roomNumber}")
+    public ChatMessage updateUser(
+            @DestinationVariable String roomNumber,
+            @Payload ChatMessage chatMessage
+    ) {
+        activeUserManager.updateUser(roomNumber,chatMessage.getSender());
+        return chatMessage;
+    }
+
 
     // get all active users
 
@@ -59,12 +80,17 @@ public class ChatController {
     @SendTo("/room/{roomNumber}/activeUsers")
     public List<LiveUser> removeUser(
             @DestinationVariable String roomNumber,
-            @Payload ChatMessage chatMessage
+            @Payload LiveUser user
     ) {
         System.out.println("Removing user");
-        activeUserManager.removeUser(roomNumber, chatMessage.getSender());
+        activeUserManager.removeUser(roomNumber, user);
         System.out.println(activeUserManager.getUsers(roomNumber));
+        // disconnect user's websocket connection
+
+
         return activeUserManager.getUsers(roomNumber);
     }
+
+
 
 }

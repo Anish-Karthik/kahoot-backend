@@ -2,15 +2,12 @@ package com.kahoot.kahoot.users;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
 
 import lombok.ToString;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 @ToString
 @Component
@@ -22,14 +19,30 @@ public class ActiveUserManager {
         activeUsers.computeIfAbsent(room, k -> new ConcurrentHashMap<>()).put(user.getUsername(), user);
     }
 
+    public boolean userExists(String room, LiveUser user) {
+        Map<String, LiveUser> users = activeUsers.get(room);
+        return users != null && users.containsKey(user.getUsername());
+    }
+
+    public void updateUser(String room, LiveUser user) {
+        Map<String, LiveUser> users = activeUsers.get(room);
+        users.put(user.getUsername(), user);
+    }
+
     public void removeUser(String room, LiveUser user) {
         Map<String, LiveUser> users = activeUsers.get(room);
-        if (users != null) {
+        System.out.println(users);
+        System.out.println(user);
+        
+        try {
             users.remove(user.getUsername());
-            if (users.isEmpty()) {
-                activeUsers.remove(room);
-            }
+        } catch (Exception e) {
+            System.out.println("Error removing user");
+            e.printStackTrace();
         }
+        System.out.println("After remove");
+        System.out.println(users);
+        System.out.println(activeUsers);
     }
 
     // public Map<String, LiveUser> getUsers(String room) {

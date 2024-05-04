@@ -23,16 +23,22 @@ public class WebSocketEventListener {
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        LiveUser user = (LiveUser) headerAccessor.getSessionAttributes().get("user");
+        System.out.println("Disconnect event");
 
+        LiveUser user = (LiveUser) headerAccessor.getSessionAttributes().get("user");
+        String roomNumber = (String) headerAccessor.getSessionAttributes().get("roomNumber");
+
+        System.out.println(user);
+        System.out.println(headerAccessor);
+        System.out.println(event);
         if (user != null) {
             log.info("user disconnected: {}", user.getUsername());
-            var chatMessage = ChatMessage.builder()
+            ChatMessage chatMessage = ChatMessage.builder()
                     .type(MessageType.LEAVE)
                     .sender(user)
                     .build();
             System.out.println("Sending message");
-            messagingTemplate.convertAndSend("/chat/public", chatMessage);
+            messagingTemplate.convertAndSend("/room/" + roomNumber, chatMessage);
         }
     }
 
