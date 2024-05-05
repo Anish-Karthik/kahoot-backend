@@ -49,8 +49,7 @@ public class QuestionSetService implements QuestionSetServicess {
             questionRepository.save(question); // Save the question if not yet persisted
             question.setQuestionSet(null);
         }
-        questionSet.setQuestions(questions); // Add to the collection
-        // questionSet =  questionSetRepository.save(questionSet); // Save the updated QuestionSet
+        questionSet.setQuestions(questions); 
         System.out.println("SUCCESSFUL");
 
         return questionSet;
@@ -58,13 +57,27 @@ public class QuestionSetService implements QuestionSetServicess {
 
     @Override
     public QuestionSet updateQuestionSet(Long id, QuestionSet questionSet) {
+        if (id != questionSet.getId()) {
+            return null;
+        }
         QuestionSet existingQuestionSet = questionSetRepository.findById(id).orElse(null);
         if (existingQuestionSet != null) {
-            existingQuestionSet.setName(questionSet.getName());
-            // existingQuestionSet.setCategories(questionSet.getCategories());
-            existingQuestionSet.setQuiz(questionSet.getQuiz());
-            existingQuestionSet.setQuestions(questionSet.getQuestions());
-            return questionSetRepository.save(existingQuestionSet);
+            List<Question> existingQuestions = existingQuestionSet.getQuestions();
+            for (Question question : existingQuestions) {
+                // remove old questions
+                questionRepository.delete(question);
+            }
+            List<Question> questions = questionSet.getQuestions();
+            questionSet.setQuestions(new ArrayList<>());
+            questionSet = questionSetRepository.save(questionSet);
+            for (Question question : questions) {
+                question.setId(null);
+                question.setQuestionSet(questionSet); // Set the relationship
+                questionRepository.save(question); // Save the question if not yet persisted
+                question.setQuestionSet(null);
+            }
+            questionSet.setQuestions(questions);
+            return questionSet;
         } else {
             return null;
         }
@@ -74,9 +87,9 @@ public class QuestionSetService implements QuestionSetServicess {
     public QuestionSet deleteQuestionSet(Long id) {
         QuestionSet existingQuestionSet = questionSetRepository.findById(id).orElse(null);
         if (existingQuestionSet != null) {
-            System.out.println("\u001B[36m"+"DELETing" + existingQuestionSet+"\u001B[0m");
+            System.out.println("\u001B[36m" + "DELETing" + existingQuestionSet + "\u001B[0m");
             questionSetRepository.delete(existingQuestionSet);
-            System.out.println("\u001B[31m"+"DELETED" + existingQuestionSet+"\u001B[0m");
+            System.out.println("\u001B[31m" + "DELETED" + existingQuestionSet + "\u001B[0m");
             return existingQuestionSet;
         } else {
             return null;
