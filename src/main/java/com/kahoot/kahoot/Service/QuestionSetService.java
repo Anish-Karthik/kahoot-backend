@@ -1,81 +1,85 @@
 package com.kahoot.kahoot.Service;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import org.hibernate.mapping.Array;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.kahoot.kahoot.Entity.Question;
+import com.kahoot.kahoot.Entity.QuestionSet;
 import com.kahoot.kahoot.Repository.QuestionRepository;
+import com.kahoot.kahoot.Repository.QuestionSetRepository;
+
 @Service
 public class QuestionSetService implements QuestionSetServicess {
 
-    private Map<Long, Question> questionMap; // Store questions using their IDs
+    @Autowired
+    private QuestionSetRepository questionSetRepository;
+    @Autowired
     private QuestionRepository questionRepository;
 
-    public QuestionSetService(QuestionRepository questionRepository) {
-        this.questionMap = new HashMap<>();
-        this.questionRepository = questionRepository;
+    @Override
+    public List<QuestionSet> getAll() {
+        return questionSetRepository.findAll();
     }
-
 
     @Override
-    public List<Question> getAllQuestions() {
-        // Assuming the repository has a method to fetch all questions
-        List<Question> questions = questionRepository.findAll();
-        return questions;
+    public List<QuestionSet> getAllWithQuestions() {
+        return questionSetRepository.findAllWithQuestions();
     }
 
-
-    public Question getQuestionById(Long id) {
-        // Retrieve the question from the question map using the provided ID
-        return questionMap.get(id);
+    @Override
+    public QuestionSet get(Long id) {
+        return questionSetRepository.findById(id).orElse(null);
     }
 
+    @Override
+    public QuestionSet addQuestionSet(QuestionSet questionSet) {
 
-    public Question addQuestion(Question question) {
-        // Generate a new ID for the question
-        Long newId = generateNewId();
+        System.out.println("\u001B[35m" + questionSet + "\u001B[0m");
+        List<Question> questions = questionSet.getQuestions();
+        questionSet.setQuestions(new ArrayList<>());
+        // System.out.println(questionSet + "\u001B[0m");
+        questionSet = questionSetRepository.save(questionSet);
+        for (Question question : questions) {
+            question.setId(null);
+            question.setQuestionSet(questionSet); // Set the relationship
+            questionRepository.save(question); // Save the question if not yet persisted
+            question.setQuestionSet(null);
+        }
+        questionSet.setQuestions(questions); // Add to the collection
+        // questionSet =  questionSetRepository.save(questionSet); // Save the updated QuestionSet
+        System.out.println("SUCCESSFUL");
 
-        // Set the ID of the question
-        question.setId(newId);
-
-        // Add the question to the question map
-        questionMap.put(newId, question);
-
-        // Return the added question
-        return question;
+        return questionSet;
     }
 
-    // Method to generate a new ID for the question
-    private Long generateNewId() {
-        // Increment the ID counter and return the new value
-        int idCounter= 0;
-        return (long) ++idCounter;
-    }
-
-    public Question updateQuestion(Long id, Question question) {
-        // Check if the question with the given id exists
-        if (questionMap.containsKey(id)) {
-            // If it exists, update the question in the question map
-            question.setId(id); // Ensure the question ID matches the provided ID
-            questionMap.put(id, question);
-            return question; // Return the updated question
+    @Override
+    public QuestionSet updateQuestionSet(Long id, QuestionSet questionSet) {
+        QuestionSet existingQuestionSet = questionSetRepository.findById(id).orElse(null);
+        if (existingQuestionSet != null) {
+            existingQuestionSet.setName(questionSet.getName());
+            // existingQuestionSet.setCategories(questionSet.getCategories());
+            existingQuestionSet.setQuiz(questionSet.getQuiz());
+            existingQuestionSet.setQuestions(questionSet.getQuestions());
+            return questionSetRepository.save(existingQuestionSet);
         } else {
-            return null; // Return null indicating update failed because the question was not found
+            return null;
         }
     }
 
-
-    public boolean deleteQuestion(Long id) {
-        // Check if the question with the given id exists
-        if (questionMap.containsKey(id)) {
-            // If it exists, remove it from the question map
-            questionMap.remove(id);
-            return true; // Return true indicating deletion was successful
+    @Override
+    public QuestionSet deleteQuestionSet(Long id) {
+        QuestionSet existingQuestionSet = questionSetRepository.findById(id).orElse(null);
+        if (existingQuestionSet != null) {
+            System.out.println("\u001B[36m"+"DELETing" + existingQuestionSet+"\u001B[0m");
+            questionSetRepository.delete(existingQuestionSet);
+            System.out.println("\u001B[31m"+"DELETED" + existingQuestionSet+"\u001B[0m");
+            return existingQuestionSet;
         } else {
-            return false; // Return false indicating deletion failed because the question was not found
+            return null;
         }
     }
 }

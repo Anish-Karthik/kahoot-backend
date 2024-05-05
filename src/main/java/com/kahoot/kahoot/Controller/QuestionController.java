@@ -1,49 +1,64 @@
 package com.kahoot.kahoot.Controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.kahoot.kahoot.Service.AnswerService;
+import com.kahoot.kahoot.Entity.Question;
+import com.kahoot.kahoot.Service.QuestionServicess;
 
-@CrossOrigin(origins = "http://localhost:3000" )
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/api/answers")
+@RequestMapping("/api/questions")
 public class QuestionController {
-    private AnswerService answerService;
+  @Autowired
+  private QuestionServicess questionService;
 
-    @Autowired
-    public void AnswerController(AnswerService answerService) {
-        this.answerService = answerService;
-    }
+  // CRUD for questions
+  @GetMapping
+  public ResponseEntity<List<Question>> getAll() {
+    List<Question> questions = questionService.getAll();
+    return ResponseEntity.ok(questions);
+  }
 
-    // Endpoint to submit an answer for a question
-    @PostMapping("/submit")
-    public ResponseEntity<Void> submitAnswer(@RequestParam Long questionId, @RequestParam String answer) {
-        // Validate parameters and handle the answer submission
-        boolean submitted = answerService.submitAnswer(questionId, answer).hasBody();
-        if (submitted) {
-            return ResponseEntity.status(HttpStatus.CREATED).build(); // Answer submitted successfully
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // Invalid parameters or answer submission failed
-        }
+  @GetMapping("/{id}")
+  public ResponseEntity<Question> get(@PathVariable Long id) {
+    Question question = questionService.get(id);
+    if (question != null) {
+      return ResponseEntity.ok(question);
+    } else {
+      return ResponseEntity.notFound().build();
     }
+  }
 
-    // Endpoint to fetch the answer for a question
-    @GetMapping("/{questionId}")
-    public ResponseEntity<String> getAnswer(@PathVariable Long questionId) {
-        String answer = String.valueOf(answerService.getAnswer(questionId));
-        if (answer != null) {
-            return ResponseEntity.ok(answer); // Return the answer if found
-        } else {
-            return ResponseEntity.notFound().build(); // Return 404 if answer not found
-        }
+  @PostMapping("/{questionSetId}")
+  public ResponseEntity<Question> createQuestion(@PathVariable Long questionSetId, @RequestBody Question question) {
+    Question newQuestion = questionService.create(questionSetId, question);
+    return ResponseEntity.ok(newQuestion);
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<Question> updateQuestion(@PathVariable Long id, @RequestBody Question question) {
+    Question updatedQuestion = questionService.update(id, question);
+    if (updatedQuestion != null) {
+      return ResponseEntity.ok(updatedQuestion);
+    } else {
+      return ResponseEntity.notFound().build();
     }
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Question> deleteQuestion(@PathVariable Long id) {
+    Question deletedQuestion = questionService.delete(id);
+    if (deletedQuestion != null) {
+      return ResponseEntity.ok(deletedQuestion);
+    } else {
+      return ResponseEntity.notFound().build();
+    }
+  }
+
 }

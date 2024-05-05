@@ -2,17 +2,19 @@ package com.kahoot.kahoot.Service;
 
 import java.util.List;
 
-import com.kahoot.kahoot.Entity.Question;
+import com.kahoot.kahoot.Entity.QuestionSet;
 
 public interface QuestionSetServicess {
 
-    List<Question> getAllQuestions();
+    List<QuestionSet> getAll();
+    List<QuestionSet> getAllWithQuestions();
 
-    Question getQuestionById(Long id);
+    QuestionSet get(Long id);
 
-    Question addQuestion(Question question);
+    QuestionSet addQuestionSet(QuestionSet questionSet);
 
-    Question updateQuestion(Long id, Question question);
+    QuestionSet updateQuestionSet(Long id, QuestionSet questionSet);
 
-    boolean deleteQuestion(Long id);
+    QuestionSet deleteQuestionSet(Long id);
+
 }
