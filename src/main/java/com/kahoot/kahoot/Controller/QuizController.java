@@ -15,21 +15,35 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kahoot.kahoot.Entity.Quiz;
 import com.kahoot.kahoot.Service.QuizService;
 
-@CrossOrigin(origins = "http://localhost:3000" )
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/api/quizzes")
+@RequestMapping("/api/quiz")
 public class QuizController {
 
     @Autowired
     private QuizService quizService;
 
-    @PostMapping
-    public ResponseEntity<String> createQuiz(@RequestBody Quiz quiz) {
-        Quiz createdQuiz = quizService.createQuiz(quiz);
-        return ResponseEntity.ok("Quiz created with ID: " + createdQuiz.getId());
+    @GetMapping
+    public ResponseEntity<Iterable<Quiz>> getAllQuizzes() {
+        Iterable<Quiz> quizzes = quizService.getAllQuizzes();
+        return ResponseEntity.ok(quizzes);
     }
+
+    @PostMapping
+    public ResponseEntity<Quiz> createQuiz(@RequestBody Quiz quiz) {
+        Quiz createdQuiz = quizService.createQuiz(quiz);
+        return ResponseEntity.ok(createdQuiz);
+    }
+
+    @PostMapping("/{questionSetId}")
+    public ResponseEntity<Quiz> createQuiz(@PathVariable Long questionSetId, @RequestBody Quiz quiz) {
+        Quiz createdQuiz = quizService.createQuiz(quiz);
+        createdQuiz = quizService.addQuestionSet(createdQuiz, quiz.getQuestionSets().get(0));
+        return ResponseEntity.ok(createdQuiz);
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity  <Quiz> getQuizById(@PathVariable Long id) {
+    public ResponseEntity<Quiz> getQuizById(@PathVariable Long id) {
         Quiz quiz = quizService.getQuizById(id);
         if (quiz != null) {
             return ResponseEntity.ok(quiz);
