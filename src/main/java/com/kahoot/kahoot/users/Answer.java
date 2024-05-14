@@ -4,18 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
-public class LiveUser {
+public class Answer {
+  private int answerIndex;
+  private boolean correct;
+  private int questionIndex;
+  private double answeredInSeconds;
   private String username;
-  private String imageUrl;
-  private List<Answer> answers;
-
-  public LiveUser getByUsername(String username) {
-    return this;
-  }
+  private int score;
 }

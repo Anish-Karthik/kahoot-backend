@@ -1,7 +1,5 @@
 package com.kahoot.kahoot.chat;
 
-import com.kahoot.kahoot.users.LiveUser;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,10 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ChatMessage {
-    private MessageType type;
-    private String content;
-    private LiveUser sender;
-    @Builder.Default
-    private Receiver reciever = Receiver.ALL;
+public class Leaderboard {
+  private String username;
+  private int score;
 }

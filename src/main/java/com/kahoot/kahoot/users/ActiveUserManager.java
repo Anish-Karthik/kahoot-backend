@@ -7,6 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
 
+import com.kahoot.kahoot.chat.Leaderboard;
+
 import lombok.ToString;
 
 @ToString
@@ -33,7 +35,7 @@ public class ActiveUserManager {
         Map<String, LiveUser> users = activeUsers.get(room);
         System.out.println(users);
         System.out.println(user);
-        
+
         try {
             users.remove(user.getUsername());
         } catch (Exception e) {
@@ -45,53 +47,22 @@ public class ActiveUserManager {
         System.out.println(activeUsers);
     }
 
-    // public Map<String, LiveUser> getUsers(String room) {
-    //     return activeUsers.getOrDefault(room, new ConcurrentHashMap<>());
-    // }
-
     public List<LiveUser> getUsers(String room) {
         return new ArrayList<>(activeUsers.getOrDefault(room, new ConcurrentHashMap<>()).values());
     }
 
-    // private final Map<String, Set<LiveUser>> activeSessions = new ConcurrentHashMap<>();
-
-    // public void addUser(String room, LiveUser user) {
-    //     activeSessions.computeIfAbsent(room, k -> new CopyOnWriteArraySet<>()).add(user);
-    //     // System.out.println(this);
-    // }
-
-    // public void removeUser(String room, LiveUser user) {
-    //     Set<LiveUser> users = activeSessions.get(room);
-    //     if (users != null) {
-    //         users.remove(user);
-    //         if (users.isEmpty()) {
-    //             activeSessions.remove(room);
-    //         }
-    //     }
-    // }
-
-    // public Set<LiveUser> getUsers(String room) {
-    //     return activeSessions.getOrDefault(room, new CopyOnWriteArraySet<>());
-    // }
-
-
-
-    // public void addUser(String room, String username) {
-    //     activeSessions.computeIfAbsent(room, k -> new CopyOnWriteArraySet<>()).add(username);
-    // }
-
-    // public void removeUser(String room, String username) {
-    //     Set<String> users = activeSessions.get(room);
-    //     if (users != null) {
-    //         users.remove(username);
-    //         if (users.isEmpty()) {
-    //             activeSessions.remove(room);
-    //         }
-    //     }
-    // }
-
-    // public Set<String> getUsers(String room) {
-    //     return activeSessions.getOrDefault(room, new CopyOnWriteArraySet<>());
-    // }
+    public List<Leaderboard> getLeaderboard(String room) {
+        List<Leaderboard> leaderboards = new ArrayList<>();
+        Map<String, LiveUser> users = activeUsers.get(room);
+        if (users == null) {
+            return leaderboards;
+        }
+        for (LiveUser user : users.values()) {
+            leaderboards.add(Leaderboard.builder()
+                    .username(user.getUsername())
+                    .score(user.getAnswers().stream().mapToInt(Answer::getScore).sum())
+                    .build());
+        }
+        return leaderboards;
+    }
 }
-

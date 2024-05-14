@@ -4,5 +4,11 @@ public enum MessageType {
     ERROR,
     UPDATE,
     JOIN,
-    LEAVE
+    LEAVE,
+    LEADERBOARD, // return leaderboard in subscrition
+    QUESTION, // return question in subscription
+    ANSWER, // inputs answer in send
+    TIMER, // wait time
+    START, // start quiz
+    END, // end quiz
 }
