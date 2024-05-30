@@ -3,7 +3,6 @@ package com.kahoot.kahoot.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.mapping.Array;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +31,8 @@ public class QuestionSetService implements QuestionSetServicess {
 
     @Override
     public QuestionSet get(Long id) {
+        System.out.println("GETTING" + id);
+        System.out.println("\u001B[35m" + questionSetRepository.findById(id).orElse(null) + "\u001B[0m");
         return questionSetRepository.findById(id).orElse(null);
     }
 
@@ -49,7 +50,7 @@ public class QuestionSetService implements QuestionSetServicess {
             questionRepository.save(question); // Save the question if not yet persisted
             question.setQuestionSet(null);
         }
-        questionSet.setQuestions(questions); 
+        questionSet.setQuestions(questions);
         System.out.println("SUCCESSFUL");
 
         return questionSet;
@@ -73,8 +74,7 @@ public class QuestionSetService implements QuestionSetServicess {
             for (Question question : questions) {
                 question.setId(null);
                 question.setQuestionSet(questionSet); // Set the relationship
-                questionRepository.save(question); // Save the question if not yet persisted
-                question.setQuestionSet(null);
+                questionRepository.save(question); // Save the question if not yet persisted    
             }
             questionSet.setQuestions(questions);
             return questionSet;

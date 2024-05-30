@@ -1,6 +1,7 @@
 package com.kahoot.kahoot.chat;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -13,8 +14,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.kahoot.kahoot.Entity.Question;
 import com.kahoot.kahoot.users.ActiveUserManager;
+import com.kahoot.kahoot.users.Answer;
 import com.kahoot.kahoot.users.LiveUser;
-import java.util.concurrent.TimeUnit;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @Controller
@@ -93,6 +94,8 @@ public class ChatController {
     public ChatMessage startQuiz(
             @DestinationVariable String roomNumber,
             @Payload ChatMessage chatMessage) {
+        System.out.println("Starting");
+        chatMessage.setReciever(Receiver.ALL);
         chatMessage.setType(MessageType.START);
         chatMessage.setContent("Quiz has started");
         return chatMessage;
@@ -117,12 +120,34 @@ public class ChatController {
             @DestinationVariable String roomNumber,
             @Payload AdvancedChatMessage chatMessage) throws InterruptedException {
         Question question = chatMessage.getQuestion();
+        var currentQuestion = new Question();
+        currentQuestion.setQuestion(question.getQuestion());
+        currentQuestion.setOptions(question.getOptions());
+        currentQuestion.setCorrectAnswerIndices(question.getCorrectAnswerIndices());
+        currentQuestion.setTimeLimit(question.getTimeLimit());
+        currentQuestion.setQuestionSet(question.getQuestionSet());
+
         question.setCorrectAnswerIndices(null);
+        question.setQuestion(null);
         chatMessage.setQuestion(question);
         chatMessage.setType(MessageType.QUESTION);
         chatMessage.setReciever(Receiver.PLAYER);
         // Delay execution for 5 seconds
         TimeUnit.SECONDS.sleep(chatMessage.getDelayInSeconds());
+        return chatMessage;
+    }
+
+    // send answer Frequency to host
+    @MessageMapping("/chat/{roomNumber}/answerFrequency")
+    @SendTo("/room/{roomNumber}/quiz")
+    public AdvancedChatMessage sendAnswerFrequency(
+            @DestinationVariable String roomNumber,
+            @Payload AdvancedChatMessage chatMessage) {
+
+        System.out.println("Sending answer frequency");
+        chatMessage.setType(MessageType.ANSWER_FREQUENCY);
+        chatMessage.setReciever(Receiver.HOST);
+        // chatMessage.setAnswerFrequency(activeUserManager.getAnswerFrequency(roomNumber, chatMessage.getQuestionIndex()));
         return chatMessage;
     }
 
@@ -134,7 +159,24 @@ public class ChatController {
             @Payload AdvancedChatMessage chatMessage) {
         chatMessage.setType(MessageType.LEADERBOARD);
         chatMessage.setReciever(Receiver.HOST);
-        chatMessage.setLeaderboard(activeUserManager.getLeaderboard(roomNumber));
+        // chatMessage.setLeaderboard(activeUserManager.getLeaderboard(roomNumber));
+        return chatMessage;
+    }
+
+    @MessageMapping("/chat/{roomNumber}/answer")
+    @SendTo("/room/{roomNumber}/quiz")
+    public AdvancedChatMessage sendAnswer(
+            @DestinationVariable String roomNumber,
+            @Payload AdvancedChatMessage chatMessage) {
+        chatMessage.setType(MessageType.ANSWER);
+        chatMessage.setReciever(Receiver.HOST);
+        Answer answer = new Answer();
+        answer.setAnswerIndex(chatMessage.getAnswerIndex());
+        // answer.setAnsweredInSeconds(answeredInSeconds);
+        // answer.setCorrect(chatMessage.getVerdict().equals(Verdict.CORRECT));
+        // answer.set
+
+        activeUserManager.addAnswer(roomNumber, chatMessage.getSender().getUsername(), answer);
         return chatMessage;
     }
 

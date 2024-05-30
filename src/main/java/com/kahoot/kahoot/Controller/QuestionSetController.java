@@ -7,18 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kahoot.kahoot.Entity.QuestionSet;
-import com.kahoot.kahoot.Service.QuestionSetService;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
-import com.kahoot.kahoot.Entity.Question;
 import com.kahoot.kahoot.Service.QuestionSetServicess;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -63,6 +59,7 @@ public class QuestionSetController {
     @PutMapping("/{id}")
     public ResponseEntity<QuestionSet> updateQuestionSet(@PathVariable Long id, @RequestBody QuestionSet questionSet) {
         QuestionSet updatedQuestionSet = questionSetService.updateQuestionSet(id, questionSet);
+        System.out.println(updatedQuestionSet);
         if (updatedQuestionSet != null) {
             return ResponseEntity.ok(updatedQuestionSet);
         } else {

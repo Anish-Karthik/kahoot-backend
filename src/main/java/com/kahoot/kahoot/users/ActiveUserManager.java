@@ -30,6 +30,11 @@ public class ActiveUserManager {
         Map<String, LiveUser> users = activeUsers.get(room);
         users.put(user.getUsername(), user);
     }
+    public void addAnswer(String room, String username, Answer answer) {
+        Map<String, LiveUser> users = activeUsers.get(room);
+        LiveUser user = users.get(username);
+        user.getAnswers().add(answer);
+    }
 
     public void removeUser(String room, LiveUser user) {
         Map<String, LiveUser> users = activeUsers.get(room);
@@ -49,6 +54,21 @@ public class ActiveUserManager {
 
     public List<LiveUser> getUsers(String room) {
         return new ArrayList<>(activeUsers.getOrDefault(room, new ConcurrentHashMap<>()).values());
+    }
+
+    public List<Integer> getAnswerFrequency(String room, int questionIndex) {
+        Map<String, LiveUser> users = activeUsers.get(room);
+        List<Integer> answerFrequency = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            int finalI = i;
+            answerFrequency.add((int) users.values().stream()
+                    .map(LiveUser::getAnswers)
+                    .flatMap(List::stream)
+                    .filter(answer -> answer.getQuestionIndex() == questionIndex)
+                    .filter(answer -> answer.getAnswerIndex() == finalI)
+                    .count());
+        }
+        return answerFrequency;
     }
 
     public List<Leaderboard> getLeaderboard(String room) {

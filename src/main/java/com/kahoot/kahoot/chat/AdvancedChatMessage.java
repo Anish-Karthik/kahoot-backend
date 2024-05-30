@@ -18,4 +18,7 @@ public class AdvancedChatMessage extends ChatMessage {
   private List<Leaderboard> leaderboard;
   private List<Integer> answerFrequency;
   private int delayInSeconds = 5;
+  private int answerIndex;
+  private Verdict verdict;
+  private int questionIndex;
 }
