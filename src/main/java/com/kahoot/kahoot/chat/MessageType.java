@@ -11,5 +11,6 @@ public enum MessageType {
     TIMER, // wait time
     START, // start quiz
     END, // end quiz
-    ANSWER_FREQUENCY
+    ANSWER_FREQUENCY,
+    GET_READY,
 }

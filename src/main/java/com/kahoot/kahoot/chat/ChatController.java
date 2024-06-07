@@ -1,8 +1,9 @@
 package com.kahoot.kahoot.chat;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
+import com.kahoot.kahoot.Entity.Question;
+import com.kahoot.kahoot.users.ActiveUserManager;
+import com.kahoot.kahoot.users.Answer;
+import com.kahoot.kahoot.users.LiveUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -12,10 +13,9 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
-import com.kahoot.kahoot.Entity.Question;
-import com.kahoot.kahoot.users.ActiveUserManager;
-import com.kahoot.kahoot.users.Answer;
-import com.kahoot.kahoot.users.LiveUser;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @Controller
@@ -113,6 +113,16 @@ public class ChatController {
         return chatMessage;
     }
 
+    @MessageMapping("/chat/{roomNumber}/getReady")
+    @SendTo("/room/{roomNumber}/quiz")
+    public ChatMessage getReady(
+            @DestinationVariable String roomNumber,
+            @Payload ChatMessage chatMessage) {
+        chatMessage.setType(MessageType.GET_READY);
+        chatMessage.setReciever(Receiver.PLAYER);
+        chatMessage.setContent("Get ready!!");
+        return chatMessage;
+    }
     // send question's options to all clients after a delay of 5 seconds
     @MessageMapping("/chat/{roomNumber}/question")
     @SendTo("/room/{roomNumber}/quiz")
@@ -132,8 +142,13 @@ public class ChatController {
         chatMessage.setQuestion(question);
         chatMessage.setType(MessageType.QUESTION);
         chatMessage.setReciever(Receiver.PLAYER);
+        chatMessage.setQuestionIndex(chatMessage.getQuestionIndex());
         // Delay execution for 5 seconds
         TimeUnit.SECONDS.sleep(chatMessage.getDelayInSeconds());
+        activeUserManager.answerManager.setCurrentQuestion(currentQuestion);
+        activeUserManager.answerManager.startTimer();
+        activeUserManager.answerManager.setCurrentQuestionIndex(chatMessage.getQuestionIndex());
+        activeUserManager.answerManager.setStartTime(new Date());
         return chatMessage;
     }
 
@@ -147,7 +162,8 @@ public class ChatController {
         System.out.println("Sending answer frequency");
         chatMessage.setType(MessageType.ANSWER_FREQUENCY);
         chatMessage.setReciever(Receiver.HOST);
-        // chatMessage.setAnswerFrequency(activeUserManager.getAnswerFrequency(roomNumber, chatMessage.getQuestionIndex()));
+        // chatMessage.setAnswerFrequency(activeUserManager.getAnswerFrequency(roomNumber,
+        // chatMessage.getQuestionIndex()));
         return chatMessage;
     }
 
@@ -168,7 +184,8 @@ public class ChatController {
     public AdvancedChatMessage sendAnswer(
             @DestinationVariable String roomNumber,
             @Payload AdvancedChatMessage chatMessage) {
-        chatMessage.setType(MessageType.ANSWER);
+        System.out.println("Sending answer\n*****************************\n++++++++++++++++++++++++\n*********************");
+        // chatMessage.setType(MessageType.ANSWER);
         chatMessage.setReciever(Receiver.HOST);
         Answer answer = new Answer();
         answer.setAnswerIndex(chatMessage.getAnswerIndex());
@@ -176,8 +193,10 @@ public class ChatController {
         // answer.setCorrect(chatMessage.getVerdict().equals(Verdict.CORRECT));
         // answer.set
 
-        activeUserManager.addAnswer(roomNumber, chatMessage.getSender().getUsername(), answer);
+
+        Answer res = activeUserManager.answerManager.validateAnswer(chatMessage.getAnswerIndex(), chatMessage.getSender().getUsername());
+        chatMessage.setVerdict(Verdict.builder().correct(res.isCorrect()).correctAnswerIndex(res.getAnswerIndex()).score(res.getScore()).build());
+        activeUserManager.addAnswer(roomNumber, chatMessage.getSender().getUsername(), res);
         return chatMessage;
     }
-
 }

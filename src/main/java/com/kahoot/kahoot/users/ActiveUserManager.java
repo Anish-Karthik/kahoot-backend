@@ -1,19 +1,22 @@
 package com.kahoot.kahoot.users;
 
+import com.kahoot.kahoot.chat.AnswerManager;
+import com.kahoot.kahoot.chat.Leaderboard;
+import lombok.ToString;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.stereotype.Component;
-
-import com.kahoot.kahoot.chat.Leaderboard;
-
-import lombok.ToString;
-
 @ToString
 @Component
 public class ActiveUserManager {
+
+    @Autowired
+    public AnswerManager answerManager;
 
     private final Map<String, Map<String, LiveUser>> activeUsers = new ConcurrentHashMap<>();
 
@@ -30,9 +33,16 @@ public class ActiveUserManager {
         Map<String, LiveUser> users = activeUsers.get(room);
         users.put(user.getUsername(), user);
     }
+
     public void addAnswer(String room, String username, Answer answer) {
         Map<String, LiveUser> users = activeUsers.get(room);
         LiveUser user = users.get(username);
+        if (user == null) {
+            return;
+        }
+        if (user.getAnswers() == null) {
+            user.setAnswers(new ArrayList<>());
+        }
         user.getAnswers().add(answer);
     }
 
